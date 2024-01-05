@@ -17,7 +17,7 @@ import (
 //go:embed migrations
 var migrationsFs embed.FS
 
-// zerologMigrationLogger wraps a zerolog.Logger to make it compatible with golang-migrate
+// zerologMigrationLogger wraps a zerolog.Logger to make it compatible with golang-migrate.
 type zerologMigrationLogger struct {
 	logger zerolog.Logger
 }
