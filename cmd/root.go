@@ -11,6 +11,7 @@ import (
 )
 
 var logLevel string
+var dbPath string
 
 var rootCmd = &cobra.Command{
 	Use:   "netenvelope",
@@ -44,6 +45,8 @@ func init() {
 			return matchingLevels, cobra.ShellCompDirectiveNoFileComp
 		},
 	)
+
+	rootCmd.PersistentFlags().StringVar(&dbPath, "db-path", "netenvelope.db", "path to the database file")
 
 	cobra.OnInitialize(initLogging)
 }
