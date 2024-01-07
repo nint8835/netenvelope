@@ -21,7 +21,6 @@
 go.work
 
 node_modules/
-pkg/server/static/tailwind.css
 
 .idea/
 tmp/
