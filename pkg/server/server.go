@@ -11,6 +11,10 @@ import (
 	glog "github.com/labstack/gommon/log"
 	"github.com/rs/zerolog/log"
 	"github.com/ziflex/lecho/v3"
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/nint8835/netenvelope/pkg/database"
+	"github.com/nint8835/netenvelope/pkg/database/queries"
 )
 
 //go:generate npm run build
@@ -20,11 +24,12 @@ var staticFS embed.FS
 type Config struct {
 	BindAddr      string
 	SessionSecret string
+	DbPath        string
 }
 
 type Server struct {
-	config Config
-
+	config   Config
+	queries  *queries.Queries
 	echoInst *echo.Echo
 }
 
@@ -39,8 +44,54 @@ func (s *Server) index(c echo.Context) error {
 	return c.Render(http.StatusOK, "index.gohtml", nil)
 }
 
+func (s *Server) loginPage(c echo.Context) error {
+	currentUser := s.getCurrentUser(c)
+	if currentUser != nil {
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	return c.Render(http.StatusOK, "login.gohtml", nil)
+}
+
+type loginFormBody struct {
+	Username string `form:"username"`
+	Password string `form:"password"`
+}
+
+func (s *Server) login(c echo.Context) error {
+	var form loginFormBody
+
+	if err := c.Bind(&form); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	user, err := s.queries.GetUserByUsername(c.Request().Context(), form.Username)
+	if err != nil {
+		// TODO: Handle better; Prevent user enumeration
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error getting user: %s", err))
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(form.Password))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
+	}
+
+	sess := getSession(c)
+	sess.Values[userSessionKey] = user.ID
+	err = sess.Save(c.Request(), c.Response())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error saving session: %s", err))
+	}
+
+	return c.Redirect(http.StatusFound, "/")
+}
+
 func (s *Server) registerRoutes() {
 	s.echoInst.GET("/", s.index)
+
+	s.echoInst.GET("/login", s.loginPage)
+	s.echoInst.POST("/login", s.login)
+
 	s.echoInst.GET("/static/*", echo.WrapHandler(http.FileServer(http.FS(staticFS))))
 }
 
@@ -50,7 +101,7 @@ func (s *Server) Start() error {
 	return s.echoInst.Start(s.config.BindAddr)
 }
 
-func New(config Config) *Server {
+func New(config Config) (*Server, error) {
 	echoInst := echo.New()
 	echoInst.Renderer = NewEmbeddedTemplater()
 
@@ -60,8 +111,14 @@ func New(config Config) *Server {
 
 	echoInst.Use(session.Middleware(sessions.NewCookieStore([]byte(config.SessionSecret))))
 
+	dbInst, err := database.New(config.DbPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
 	return &Server{
 		config:   config,
+		queries:  dbInst,
 		echoInst: echoInst,
-	}
+	}, nil
 }

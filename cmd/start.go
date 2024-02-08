@@ -22,14 +22,16 @@ var startCmd = &cobra.Command{
 			log.Warn().Msg("Use --session-secret or the SESSION_SECRET environment variable to set a custom session secret.")
 		}
 
-		serverInst := server.New(
+		serverInst, err := server.New(
 			server.Config{
 				BindAddr:      bindAddr,
 				SessionSecret: sessionSecret,
+				DbPath:        dbPath,
 			},
 		)
+		checkError(err, "Error creating server")
 
-		err := serverInst.Start()
+		err = serverInst.Start()
 		checkError(err, "Error starting server")
 	},
 }
