@@ -1,0 +1,11 @@
+{{ define "layout" }}
+    <html lang="en">
+        <head>
+            <title>Netenvelope{{ template "title" . }}</title>
+            <link rel="stylesheet" href="static/tailwind.css" />
+        </head>
+        <body class="bg-slate-900 text-slate-100">
+            {{ template "content" . }}
+        </body>
+    </html>
+{{ end }}

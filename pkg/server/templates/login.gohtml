@@ -1,14 +1,10 @@
-<html>
-    <head>
-        <title>Netenvelope</title>
-        <link rel="stylesheet" href="static/tailwind.css" />
-    </head>
-    <body class="bg-slate-900 text-slate-100">
-        <form action="/login" method="post">
-            <input type="text" name="username" placeholder="Username" required />
-            <input type="password" name="password" placeholder="Password" required />
+{{ template "layout" }}
+{{ define "title" }} - Login{{end}}
+{{ define "content" }}
+    <form action="/login" method="post">
+        <input type="text" name="username" placeholder="Username" required />
+        <input type="password" name="password" placeholder="Password" required />
 
-            <button type="submit">Login</button>
-        </form>
-    </body>
-</html>
+        <button type="submit">Login</button>
+    </form>
+{{ end }}
