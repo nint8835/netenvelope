@@ -40,18 +40,16 @@ func (s *Server) getCurrentUser(c echo.Context) *queries.User {
 	return &user
 }
 
-//nolint:unused
 type globalTemplateContext struct {
-	currentUser *queries.User
+	CurrentUser *queries.User
 }
 
-//nolint:unused
 func (s *Server) getGlobalTemplateContext(c echo.Context) globalTemplateContext {
 	_ = getSession(c)
 
 	currentUser := s.getCurrentUser(c)
 
 	return globalTemplateContext{
-		currentUser: currentUser,
+		CurrentUser: currentUser,
 	}
 }

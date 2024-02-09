@@ -1,5 +1,5 @@
 {{ template "layout" }}
-{{ define "title" }} - Login{{end}}
+{{ define "title" }}{{ " - Login" }}{{ end }}
 {{ define "content" }}
     <form action="/login" method="post">
         <input type="text" name="username" placeholder="Username" required />

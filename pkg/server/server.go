@@ -19,6 +19,7 @@ import (
 
 //go:generate npm run build
 //go:embed static
+//nolint:typecheck
 var staticFS embed.FS
 
 type Config struct {
@@ -34,14 +35,9 @@ type Server struct {
 }
 
 func (s *Server) index(c echo.Context) error {
-	sess := getSession(c)
-	sess.Values["test"] = "test"
-	err := sess.Save(c.Request(), c.Response())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error saving session: %s", err))
-	}
+	globalCtx := s.getGlobalTemplateContext(c)
 
-	return c.Render(http.StatusOK, "index.gohtml", nil)
+	return c.Render(http.StatusOK, "index.gohtml", globalCtx)
 }
 
 func (s *Server) loginPage(c echo.Context) error {
@@ -86,11 +82,23 @@ func (s *Server) login(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/")
 }
 
+func (s *Server) logout(c echo.Context) error {
+	sess := getSession(c)
+	delete(sess.Values, userSessionKey)
+	err := sess.Save(c.Request(), c.Response())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error saving session: %s", err))
+	}
+
+	return c.Redirect(http.StatusFound, "/")
+}
+
 func (s *Server) registerRoutes() {
 	s.echoInst.GET("/", s.index)
 
 	s.echoInst.GET("/login", s.loginPage)
 	s.echoInst.POST("/login", s.login)
+	s.echoInst.GET("/logout", s.logout)
 
 	s.echoInst.GET("/static/*", echo.WrapHandler(http.FileServer(http.FS(staticFS))))
 }
