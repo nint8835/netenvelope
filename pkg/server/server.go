@@ -137,7 +137,7 @@ func (s *Server) updateUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error updating user: %s", err))
 	}
 
-	return nil
+	return c.Redirect(http.StatusFound, "/")
 }
 
 func (s *Server) registerRoutes() {
