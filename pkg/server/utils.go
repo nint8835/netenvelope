@@ -44,12 +44,18 @@ type globalTemplateContext struct {
 	CurrentUser *queries.User
 }
 
-func (s *Server) getGlobalTemplateContext(c echo.Context) globalTemplateContext {
+type baseTemplateContext struct {
+	Globals globalTemplateContext
+}
+
+func (s *Server) getBaseTemplateContext(c echo.Context) baseTemplateContext {
 	_ = getSession(c)
 
 	currentUser := s.getCurrentUser(c)
 
-	return globalTemplateContext{
-		CurrentUser: currentUser,
+	return baseTemplateContext{
+		globalTemplateContext{
+			CurrentUser: currentUser,
+		},
 	}
 }

@@ -1,9 +1,10 @@
-{{- /*gotype: github.com/nint8835/netenvelope/pkg/server.globalTemplateContext*/ -}}
+{{- /*gotype: github.com/nint8835/netenvelope/pkg/server.emptyTemplateContext*/ -}}
 
 {{ define "layout" }}
     <html lang="en">
         <head>
             <title>Netenvelope{{ template "title" . }}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="stylesheet" href="static/tailwind.css" />
             <link
                 rel="icon"
@@ -14,7 +15,7 @@
             <div class="flex flex-row items-center justify-between pb-2">
                 <h1 class="text-2xl"><a href="/">Netenvelope</a></h1>
                 <div>
-                    {{ if .CurrentUser }}
+                    {{ if .Globals.CurrentUser }}
                         <a class="transition-all hover:text-blue-300" href="/logout">Logout</a>
                     {{ else }}
                         <a class="transition-all hover:text-blue-300" href="/login">Login</a>

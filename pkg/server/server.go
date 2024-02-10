@@ -1,7 +1,9 @@
 package server
 
 import (
+	"database/sql"
 	"embed"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -35,18 +37,26 @@ type Server struct {
 }
 
 func (s *Server) index(c echo.Context) error {
-	globalCtx := s.getGlobalTemplateContext(c)
+	baseCtx := s.getBaseTemplateContext(c)
 
-	return c.Render(http.StatusOK, "index.gohtml", globalCtx)
+	return c.Render(http.StatusOK, "index.gohtml", baseCtx)
+}
+
+type loginPageContext struct {
+	baseTemplateContext
+
+	Error string
 }
 
 func (s *Server) loginPage(c echo.Context) error {
+	baseCtx := s.getBaseTemplateContext(c)
+
 	currentUser := s.getCurrentUser(c)
 	if currentUser != nil {
 		return c.Redirect(http.StatusFound, "/")
 	}
 
-	return c.Render(http.StatusOK, "login.gohtml", nil)
+	return c.Render(http.StatusOK, "login.gohtml", loginPageContext{baseTemplateContext: baseCtx})
 }
 
 type loginFormBody struct {
@@ -61,15 +71,34 @@ func (s *Server) login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
+	baseCtx := s.getBaseTemplateContext(c)
+
 	user, err := s.queries.GetUserByUsername(c.Request().Context(), form.Username)
 	if err != nil {
-		// TODO: Handle better; Prevent user enumeration
-		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error getting user: %s", err))
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Error().Err(err).Msg("Error getting user by username")
+		}
+
+		return c.Render(
+			http.StatusOK,
+			"login.gohtml",
+			loginPageContext{
+				Error:               "Invalid username or password",
+				baseTemplateContext: baseCtx,
+			},
+		)
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(form.Password))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
+		return c.Render(
+			http.StatusOK,
+			"login.gohtml",
+			loginPageContext{
+				Error:               "Invalid username or password",
+				baseTemplateContext: baseCtx,
+			},
+		)
 	}
 
 	sess := getSession(c)
