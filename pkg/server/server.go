@@ -115,12 +115,6 @@ func (s *Server) Start() error {
 
 func New(config Config) (*Server, error) {
 	echoInst := echo.New()
-	renderer, err := NewEmbeddedTemplater()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create renderer: %w", err)
-	}
-
-	echoInst.Renderer = renderer
 
 	logger := lecho.From(log.Logger, lecho.WithLevel(glog.INFO))
 	echoInst.Logger = logger
