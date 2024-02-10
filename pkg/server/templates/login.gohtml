@@ -1,10 +1,25 @@
 {{ template "layout" }}
 {{ define "title" }}{{ " - Login" }}{{ end }}
 {{ define "content" }}
-    <form action="/login" method="post">
-        <input type="text" name="username" placeholder="Username" required />
-        <input type="password" name="password" placeholder="Password" required />
+    <div class="flex justify-center">
+        <form action="/login" method="post" class="flex max-w-96 flex-col">
+            <label for="username">Username</label>
+            <input
+                type="text"
+                name="username"
+                required
+                class="mb-4 rounded-md p-2 text-zinc-900 outline-none ring-blue-500 transition-all focus:ring-2"
+            />
 
-        <button type="submit">Login</button>
-    </form>
+            <label for="password">Password</label>
+            <input
+                type="password"
+                name="password"
+                required
+                class="mb-12 rounded-md p-2 text-zinc-900 outline-none ring-blue-500 transition-all focus:ring-2"
+            />
+
+            <button type="submit" class="rounded-md bg-blue-500 py-2 transition-colors hover:bg-blue-600">Login</button>
+        </form>
+    </div>
 {{ end }}
