@@ -1,6 +1,9 @@
 package server
 
 import (
+	"context"
+
+	"github.com/a-h/templ"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -40,22 +43,18 @@ func (s *Server) getCurrentUser(c echo.Context) *queries.User {
 	return &user
 }
 
-type globalTemplateContext struct {
-	CurrentUser *queries.User
-}
-
-type baseTemplateContext struct {
-	Globals globalTemplateContext
-}
-
-func (s *Server) getBaseTemplateContext(c echo.Context) baseTemplateContext {
+func (s *Server) getRenderContext(c echo.Context) context.Context {
 	_ = getSession(c)
 
 	currentUser := s.getCurrentUser(c)
 
-	return baseTemplateContext{
-		globalTemplateContext{
-			CurrentUser: currentUser,
-		},
-	}
+	return context.WithValue(c.Request().Context(), "current_user", currentUser)
+}
+
+func (s *Server) renderComponent(c echo.Context, status int, component templ.Component) error {
+	c.Response().Writer.WriteHeader(status)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	component.Render(s.getRenderContext(c), c.Response().Writer)
+
+	return nil
 }

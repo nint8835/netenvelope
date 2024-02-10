@@ -17,6 +17,7 @@ import (
 
 	"github.com/nint8835/netenvelope/pkg/database"
 	"github.com/nint8835/netenvelope/pkg/database/queries"
+	"github.com/nint8835/netenvelope/pkg/server/ui/pages"
 )
 
 //go:generate npm run build
@@ -37,26 +38,16 @@ type Server struct {
 }
 
 func (s *Server) index(c echo.Context) error {
-	baseCtx := s.getBaseTemplateContext(c)
-
-	return c.Render(http.StatusOK, "index.gohtml", baseCtx)
-}
-
-type loginPageContext struct {
-	baseTemplateContext
-
-	Error string
+	return s.renderComponent(c, http.StatusOK, pages.Home())
 }
 
 func (s *Server) loginPage(c echo.Context) error {
-	baseCtx := s.getBaseTemplateContext(c)
-
 	currentUser := s.getCurrentUser(c)
 	if currentUser != nil {
 		return c.Redirect(http.StatusFound, "/")
 	}
 
-	return c.Render(http.StatusOK, "login.gohtml", loginPageContext{baseTemplateContext: baseCtx})
+	return s.renderComponent(c, http.StatusOK, pages.Login(""))
 }
 
 type loginFormBody struct {
@@ -71,34 +62,18 @@ func (s *Server) login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	baseCtx := s.getBaseTemplateContext(c)
-
 	user, err := s.queries.GetUserByUsername(c.Request().Context(), form.Username)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			log.Error().Err(err).Msg("Error getting user by username")
 		}
 
-		return c.Render(
-			http.StatusOK,
-			"login.gohtml",
-			loginPageContext{
-				Error:               "Invalid username or password",
-				baseTemplateContext: baseCtx,
-			},
-		)
+		return s.renderComponent(c, http.StatusOK, pages.Login("Invalid username or password"))
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(form.Password))
 	if err != nil {
-		return c.Render(
-			http.StatusOK,
-			"login.gohtml",
-			loginPageContext{
-				Error:               "Invalid username or password",
-				baseTemplateContext: baseCtx,
-			},
-		)
+		return s.renderComponent(c, http.StatusOK, pages.Login("Invalid username or password"))
 	}
 
 	sess := getSession(c)
