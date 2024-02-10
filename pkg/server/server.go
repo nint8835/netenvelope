@@ -2,11 +2,11 @@ package server
 
 import (
 	"database/sql"
-	"embed"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/benbjohnson/hashfs"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -17,13 +17,9 @@ import (
 
 	"github.com/nint8835/netenvelope/pkg/database"
 	"github.com/nint8835/netenvelope/pkg/database/queries"
+	"github.com/nint8835/netenvelope/pkg/server/static"
 	"github.com/nint8835/netenvelope/pkg/server/ui/pages"
 )
-
-//go:generate npm run build
-//go:embed static
-//nolint:typecheck
-var staticFS embed.FS
 
 type Config struct {
 	BindAddr      string
@@ -104,7 +100,7 @@ func (s *Server) registerRoutes() {
 	s.echoInst.POST("/login", s.login)
 	s.echoInst.GET("/logout", s.logout)
 
-	s.echoInst.GET("/static/*", echo.WrapHandler(http.FileServer(http.FS(staticFS))))
+	s.echoInst.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", hashfs.FileServer(static.HashFS))))
 }
 
 func (s *Server) Start() error {

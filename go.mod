@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/a-h/templ v0.2.543
+	github.com/benbjohnson/hashfs v0.2.1
 	github.com/charmbracelet/huh v0.3.0
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/gorilla/sessions v1.2.2
