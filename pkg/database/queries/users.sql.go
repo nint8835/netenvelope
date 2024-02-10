@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -48,6 +49,27 @@ WHERE username = ?
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(&i.ID, &i.Username, &i.PasswordHash)
+	return i, err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET username      = coalesce(?1, username),
+    password_hash = coalesce(?2, password_hash)
+WHERE id = ?3
+RETURNING id, username, password_hash
+`
+
+type UpdateUserParams struct {
+	Username     sql.NullString
+	PasswordHash []byte
+	ID           int64
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser, arg.Username, arg.PasswordHash, arg.ID)
 	var i User
 	err := row.Scan(&i.ID, &i.Username, &i.PasswordHash)
 	return i, err

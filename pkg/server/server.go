@@ -93,12 +93,62 @@ func (s *Server) logout(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/")
 }
 
+func (s *Server) userPage(c echo.Context) error {
+	if s.getCurrentUser(c) == nil {
+		return c.Redirect(http.StatusFound, "/login")
+	}
+
+	return s.renderComponent(c, http.StatusOK, pages.User())
+}
+
+type updateUserFormBody struct {
+	Username string `form:"username"`
+	Password string `form:"password"`
+}
+
+func (s *Server) updateUser(c echo.Context) error {
+	var form updateUserFormBody
+
+	if err := c.Bind(&form); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	currentUser := s.getCurrentUser(c)
+
+	updateObj := queries.UpdateUserParams{
+		ID: currentUser.ID,
+		Username: sql.NullString{
+			Valid:  form.Username != "",
+			String: form.Username,
+		},
+	}
+
+	if form.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error hashing password: %s", err))
+		}
+
+		updateObj.PasswordHash = hash
+	}
+
+	_, err := s.queries.UpdateUser(c.Request().Context(), updateObj)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error updating user: %s", err))
+	}
+
+	return nil
+}
+
 func (s *Server) registerRoutes() {
 	s.echoInst.GET("/", s.index)
 
 	s.echoInst.GET("/login", s.loginPage)
 	s.echoInst.POST("/login", s.login)
 	s.echoInst.GET("/logout", s.logout)
+
+	s.echoInst.GET("/user", s.userPage)
+	s.echoInst.POST("/user", s.updateUser)
 
 	s.echoInst.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", hashfs.FileServer(static.HashFS))))
 }

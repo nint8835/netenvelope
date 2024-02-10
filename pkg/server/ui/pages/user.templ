@@ -1,0 +1,31 @@
+package pages
+
+import "github.com/nint8835/netenvelope/pkg/server/ui"
+
+templ User() {
+	@ui.Layout(" - User") {
+		<div class="flex justify-center">
+			<form action="/user" method="post" class="flex w-96 max-w-full flex-col">
+				<div class="mb-4 flex flex-col">
+					<label for="username">New Username</label>
+					<input
+						type="text"
+						name="username"
+						class="rounded-md p-2 text-zinc-900 outline-none ring-blue-500 transition-all focus:ring-2"
+					/>
+				</div>
+				<div class="mb-4 flex flex-col">
+					<label for="password">New Password</label>
+					<input
+						type="password"
+						name="password"
+						class="rounded-md p-2 text-zinc-900 outline-none ring-blue-500 transition-all focus:ring-2"
+					/>
+				</div>
+				<button type="submit" class="mt-8 rounded-md bg-blue-500 py-2 transition-colors hover:bg-blue-600">
+					Edit
+				</button>
+			</form>
+		</div>
+	}
+}

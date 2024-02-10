@@ -12,3 +12,10 @@ WHERE id = ?;
 SELECT *
 FROM users
 WHERE username = ?;
+
+-- name: UpdateUser :one
+UPDATE users
+SET username      = coalesce(sqlc.narg('username'), username),
+    password_hash = coalesce(sqlc.narg('password_hash'), password_hash)
+WHERE id = sqlc.arg('id')
+RETURNING *;
