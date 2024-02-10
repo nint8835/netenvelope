@@ -48,13 +48,12 @@ func (s *Server) getRenderContext(c echo.Context) context.Context {
 
 	currentUser := s.getCurrentUser(c)
 
+	//nolint:staticcheck
 	return context.WithValue(c.Request().Context(), "current_user", currentUser)
 }
 
 func (s *Server) renderComponent(c echo.Context, status int, component templ.Component) error {
 	c.Response().Writer.WriteHeader(status)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
-	component.Render(s.getRenderContext(c), c.Response().Writer)
-
-	return nil
+	return component.Render(s.getRenderContext(c), c.Response().Writer)
 }

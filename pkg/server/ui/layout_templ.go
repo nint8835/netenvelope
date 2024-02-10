@@ -10,8 +10,8 @@ import "context"
 import "io"
 import "bytes"
 
-import "github.com/nint8835/netenvelope/pkg/server/ui/utils"
 import "github.com/nint8835/netenvelope/pkg/server/static"
+import "github.com/nint8835/netenvelope/pkg/server/ui/utils"
 
 func Layout(title string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {

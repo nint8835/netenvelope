@@ -7,6 +7,7 @@ import (
 )
 
 //go:embed *.css
+//nolint:typecheck
 var fs embed.FS
 
 var HashFS *hashfs.FS
