@@ -140,6 +140,18 @@ func (s *Server) updateUser(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/")
 }
 
+func (s *Server) vlansPage(c echo.Context) error {
+	return s.renderComponent(c, http.StatusOK, pages.Vlans())
+}
+
+func (s *Server) prefixesPage(c echo.Context) error {
+	return s.renderComponent(c, http.StatusOK, pages.Prefixes())
+}
+
+func (s *Server) addressesPage(c echo.Context) error {
+	return s.renderComponent(c, http.StatusOK, pages.Addresses())
+}
+
 func (s *Server) registerRoutes() {
 	s.echoInst.GET("/", s.index)
 
@@ -149,6 +161,10 @@ func (s *Server) registerRoutes() {
 
 	s.echoInst.GET("/user", s.userPage)
 	s.echoInst.POST("/user", s.updateUser)
+
+	s.echoInst.GET("/vlans", s.vlansPage)
+	s.echoInst.GET("/prefixes", s.prefixesPage)
+	s.echoInst.GET("/addresses", s.addressesPage)
 
 	s.echoInst.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", hashfs.FileServer(static.HashFS))))
 }

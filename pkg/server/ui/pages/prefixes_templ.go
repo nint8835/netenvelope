@@ -12,7 +12,7 @@ import "bytes"
 
 import "github.com/nint8835/netenvelope/pkg/server/ui"
 
-func Home() templ.Component {
+func Prefixes() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -31,7 +31,7 @@ func Home() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><h1 class=\"text-lg\">Resources</h1><ul class=\"list-inside list-disc\"><li><a href=\"/vlans\" class=\"underline transition-all hover:text-blue-500 hover:no-underline\">VLANs</a></li><li><a href=\"/prefixes\" class=\"underline transition-all hover:text-blue-500 hover:no-underline\">Prefixes</a></li><li><a href=\"/addresses\" class=\"underline transition-all hover:text-blue-500 hover:no-underline\">Addresses</a></li></ul></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div>TODO</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -40,7 +40,7 @@ func Home() templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = ui.Layout(" - Home").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ui.Layout(" - Prefixes").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

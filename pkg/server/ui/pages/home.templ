@@ -4,6 +4,19 @@ import "github.com/nint8835/netenvelope/pkg/server/ui"
 
 templ Home() {
 	@ui.Layout(" - Home") {
-		Hello World!
+		<div>
+			<h1 class="text-lg">Resources</h1>
+			<ul class="list-inside list-disc">
+				<li>
+					<a href="/vlans" class="underline transition-all hover:text-blue-500 hover:no-underline">VLANs</a>
+				</li>
+				<li>
+					<a href="/prefixes" class="underline transition-all hover:text-blue-500 hover:no-underline">Prefixes</a>
+				</li>
+				<li>
+					<a href="/addresses" class="underline transition-all hover:text-blue-500 hover:no-underline">Addresses</a>
+				</li>
+			</ul>
+		</div>
 	}
 }
