@@ -57,3 +57,14 @@ func (s *Server) renderComponent(c echo.Context, status int, component templ.Com
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 	return component.Render(s.getRenderContext(c), c.Response().Writer)
 }
+
+func (s *Server) requireAuth(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := s.getCurrentUser(c)
+		if currentUser == nil {
+			return c.Redirect(302, "/login")
+		}
+
+		return next(c)
+	}
+}

@@ -94,10 +94,6 @@ func (s *Server) logout(c echo.Context) error {
 }
 
 func (s *Server) userPage(c echo.Context) error {
-	if s.getCurrentUser(c) == nil {
-		return c.Redirect(http.StatusFound, "/login")
-	}
-
 	return s.renderComponent(c, http.StatusOK, pages.User())
 }
 
@@ -141,7 +137,38 @@ func (s *Server) updateUser(c echo.Context) error {
 }
 
 func (s *Server) vlansPage(c echo.Context) error {
-	return s.renderComponent(c, http.StatusOK, pages.Vlans())
+	vlans, err := s.queries.ListVlans(c.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error getting vlans: %s", err))
+	}
+
+	return s.renderComponent(c, http.StatusOK, pages.Vlans(vlans))
+}
+
+type addVlanFormBody struct {
+	Tag  int64  `form:"tag"`
+	Name string `form:"name"`
+}
+
+func (s *Server) addVlan(c echo.Context) error {
+	var form addVlanFormBody
+
+	if err := c.Bind(&form); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	_, err := s.queries.CreateVlan(c.Request().Context(), queries.CreateVlanParams{
+		Tag: form.Tag,
+		Name: sql.NullString{
+			Valid:  form.Name != "",
+			String: form.Name,
+		},
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error creating vlan: %s", err))
+	}
+
+	return c.Redirect(http.StatusFound, "/vlans")
 }
 
 func (s *Server) prefixesPage(c echo.Context) error {
@@ -159,10 +186,12 @@ func (s *Server) registerRoutes() {
 	s.echoInst.POST("/login", s.login)
 	s.echoInst.GET("/logout", s.logout)
 
-	s.echoInst.GET("/user", s.userPage)
-	s.echoInst.POST("/user", s.updateUser)
+	s.echoInst.GET("/user", s.requireAuth(s.userPage))
+	s.echoInst.POST("/user", s.requireAuth(s.updateUser))
 
 	s.echoInst.GET("/vlans", s.vlansPage)
+	s.echoInst.POST("/vlans", s.requireAuth(s.addVlan))
+
 	s.echoInst.GET("/prefixes", s.prefixesPage)
 	s.echoInst.GET("/addresses", s.addressesPage)
 
